@@ -1,0 +1,75 @@
+﻿using Microsoft.CSharp;
+
+using Nemerle.Collections;
+using Nemerle.Extensions;
+using Nemerle.Imperative;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.CodeDom;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Console;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+
+using RecSharp;
+using RecSharp.Dom;
+using RecSharp.Parsing;
+
+module Program
+{
+  Main(arguments : array[string]) : void
+  {
+    def parser = RecSharpParser();
+    
+    mutable options = Options();
+    unless (CommandLine.Parser.Default.ParseArguments(arguments, options)) {
+      return ();
+    }
+    
+    def codeProv = CodeDomProvider.CreateProvider("CSharp");
+    
+    def compileUnit = CodeCompileUnit();
+    _ = compileUnit.ReferencedAssemblies.Add(typeof(string).Assembly.Location);
+    
+    when (options.AssemblyReferences != null) {
+      foreach(reference in options.AssemblyReferences) {
+        _ = compileUnit.ReferencedAssemblies.Add(reference);
+      }
+    }
+    
+    foreach(file in options.InputFiles) {
+    
+      def text = File.ReadAllText(file);
+      def (pos, ndef) = parser.TryParse(text);
+    
+      when(pos != text.Length) {
+        WriteLine($"Parsing error in position $(pos)");
+        return ();
+      }
+      
+      def builder = NamespaceDeclarationBuilder(ndef);
+      _ = compileUnit.Namespaces.Add(builder.Build());
+    }
+    
+    def codeStringBuilder = StringBuilder();
+    def codeWriter = StringWriter(codeStringBuilder);
+    
+    codeProv.GenerateCodeFromCompileUnit(compileUnit, codeWriter, null);
+    
+    def compilerParams = CompilerParameters();
+    compilerParams.OutputAssembly = options.OutputAssembly;
+    compilerParams.GenerateInMemory = false;
+    def compilationResults = codeProv.CompileAssemblyFromSource(compilerParams, codeStringBuilder.ToString());
+    
+    when (compilationResults.Errors.HasErrors) {
+      foreach(err :> CompilerError in compilationResults.Errors) {
+        WriteLine($"$(err.ErrorNumber): $(err.ErrorText)");
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.CodeDom;
+using System.Collections.Generic;
+using System.Linq;
+
+using RecSharp.Dom;
+
+namespace RecSharp
+{
+  /// <summary>
+  /// Description of NamespaceDeclarationBuilder.
+  /// </summary>
+  class NamespaceDeclarationBuilder
+  {
+    private name : string;
+    private imports : List[ImportDefinition];
+    private types : List[RecordDefinition];
+    
+    public this(definition : NamespaceDefinition) {
+      this.name = definition.Name;
+      this.imports = definition.Imports;
+      this.types = definition.Types;
+    }
+    
+    public Build() : CodeNamespace {
+      def space = CodeNamespace(name);
+      
+      foreach(import in imports) {
+        space.Imports.Add(CodeNamespaceImport(import.Namespace));
+      }
+      
+      foreach(type in types) {
+        _ = space.Types.Add(TypeDeclarationBuilder(type).Build())
+      }
+      
+      space
+    }
+  }
+}

@@ -1,0 +1,125 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Extensions;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.CodeDom;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+
+using RecSharp.Dom;
+using RecSharp.Utils;
+
+namespace RecSharp
+{
+  /// <summary>
+  /// Builder for CodeTypeDeclaration
+  /// </summary>
+  class TypeDeclarationBuilder
+  {
+    private name : string;
+    private propertyDefinitions : List[PropertyDefinition];
+    
+    public this(recDef : RecordDefinition) {
+      this.name = recDef.TypeName;
+      this.propertyDefinitions = recDef.Properties;
+    }
+    
+    private BuildProperty(definition : PropertyDefinition) : CodeMemberField * CodeMemberProperty {
+      def fieldName = "_" + definition.PropertyName.Minusculize();
+      def typeRef = CodeTypeReference(definition.TypeName);
+      def field = CodeMemberField(typeRef, fieldName) <- {
+        Attributes = MemberAttributes.Private;
+      };
+      def property = CodeMemberProperty() <- {
+        Name = definition.PropertyName;
+        Type = typeRef;
+        Attributes = MemberAttributes.Public | MemberAttributes.Final;
+      };
+      _ = property.GetStatements.Add(CodeMethodReturnStatement(
+        CodeArgumentReferenceExpression(fieldName)
+      ));
+      
+      (field, property)
+    }
+    
+    private BuildCopyMethod() : CodeMemberMethod {
+      def methodDef = CodeMemberMethod() <- {
+        Name = "Copy";
+        ReturnType = CodeTypeReference(name);
+        Attributes = MemberAttributes.Public | MemberAttributes.Final;
+      }
+      
+      def ctorParams = array(propertyDefinitions.Count);
+      
+      foreach(propDef in propertyDefinitions with idx) {
+        def argName = propDef.PropertyName.Minusculize();
+        def fieldName = "_" + argName;
+        def typeRef = CodeTypeReference(propDef.TypeName);
+        def param = CodeParameterDeclarationExpression(typeRef, argName);
+        _ = param.CustomAttributes.Add(CodeAttributeDeclaration(CodeTypeReference(typeof(OptionalAttribute))));
+        _ = methodDef.Parameters.Add(param);
+        
+        def varName = "arg" + fieldName;
+        _ = methodDef.Statements.Add(CodeVariableDeclarationStatement(typeRef, varName));
+        _ = methodDef.Statements.Add(CodeConditionStatement(
+          CodeBinaryOperatorExpression(
+            CodeArgumentReferenceExpression(argName),
+            CodeBinaryOperatorType.IdentityEquality,
+            CodeDefaultValueExpression(typeRef)
+          ),
+          array[CodeAssignStatement(CodeVariableReferenceExpression(varName), CodeFieldReferenceExpression(CodeThisReferenceExpression(), fieldName))],
+          array[CodeAssignStatement(CodeVariableReferenceExpression(varName), CodeArgumentReferenceExpression(argName))]
+        ));
+        
+        ctorParams[idx] = CodeVariableReferenceExpression(varName);
+      }
+    
+      def constructorCall = CodeObjectCreateExpression(name, ctorParams);
+      _ = methodDef.Statements.Add(CodeMethodReturnStatement(constructorCall));
+      
+      methodDef
+    }
+    
+    public Build() : CodeTypeDeclaration {
+      def declaration = CodeTypeDeclaration(this.name) <- {
+        IsClass = true;
+        TypeAttributes = TypeAttributes.Public | TypeAttributes.Sealed;
+      }
+      
+      foreach(propDef in propertyDefinitions) {
+        def (field, property) = BuildProperty(propDef);
+        _ = declaration.Members.Add(field);
+        _ = declaration.Members.Add(property);
+      }
+      
+      def ctor = CodeConstructor() <- {
+        Attributes = MemberAttributes.Public;
+      };
+      
+      foreach(propDef in propertyDefinitions) {
+        def name = propDef.PropertyName.Minusculize();
+        def fieldName = "_" + name;
+        def typeRef = CodeTypeReference(propDef.TypeName);
+        def param = CodeParameterDeclarationExpression(typeRef, name);
+        _ = ctor.Parameters.Add(param);
+        
+        def assignment = CodeAssignStatement(
+          CodeFieldReferenceExpression(CodeThisReferenceExpression(), fieldName),
+          CodeArgumentReferenceExpression(name)
+        );
+        
+        _ = ctor.Statements.Add(assignment);
+      }
+      
+      _ = declaration.Members.Add(ctor);
+      _ = declaration.Members.Add(BuildCopyMethod());
+      
+      declaration
+    }
+  }
+}

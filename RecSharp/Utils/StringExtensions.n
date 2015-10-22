@@ -1,0 +1,18 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace RecSharp.Utils
+{
+  class StringExtensions
+  {
+    public static Minusculize(this s : string) : string {
+      s.Substring (0, 1).ToLower() + s.Substring(1)
+    }
+  }
+}

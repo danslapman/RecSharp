@@ -1,0 +1,82 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Peg;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using RecSharp.Dom;
+
+namespace RecSharp.Parsing
+{
+  /// <summary>
+  /// RecSharp sources parser
+  /// </summary>
+  [PegGrammar(Options = EmitDebugSources,
+    nmspace,
+    grammar {
+      ANY = !['\u0000'..'\u001F'] !'\u007F' ['\u0000'..'\uFFFF'];
+      ws : void = ("\r\n" / "\n" / "\r" / ' ')*;
+      letter = [Lu, Ll, Lt, Lm, Lo];
+      digit = ['0'..'9'];
+      keyword = "using" / "record" / "namespace";
+      identifier : string = letter (letter / digit)*;
+      path : string = identifier ("." identifier)*;
+      
+      property : PropertyDefinition = !keyword identifier ws identifier";";
+      import : ImportDefinition = "using" ws path";";
+      
+      record : RecordDefinition = "record" ws identifier ws "{" ws property (ws property)* ws "}";
+      nmspace : NamespaceDefinition = "namespace" ws path ws "{" (ws import)* ws record (ws record)* ws "}" ws !ANY;
+    }
+  )]
+  class RecSharpParser
+  {
+    identifier(data : NToken, data2 : NToken) : string {
+      GetText(data) + GetText(data2)
+    }
+    
+    path(id : string, ids : List[NToken * string]) : string {
+      def crumbs = List();
+      crumbs.Add(id);
+      foreach((_, i) in ids) crumbs.Add(i);
+      string.Join(".", crumbs)
+    }
+    
+    property(typeName : string, propName : string, _ : NToken) : PropertyDefinition {
+      PropertyDefinition(typeName, propName)
+    }
+    
+    import(_ : NToken, nspace : string, _ : NToken) : ImportDefinition {
+      ImportDefinition(nspace)
+    }
+    
+    record(
+      _ : NToken,
+      typeName : string,
+      _ : NToken,
+      property : PropertyDefinition,
+      properties : List[PropertyDefinition],
+      _ : NToken
+      ) : RecordDefinition {
+        properties.Insert(0, property);
+        RecordDefinition(typeName, properties)
+    }
+     
+    nmspace(
+      _ : NToken,
+      spaceName : string,
+      _ : NToken,
+      imports : List[ImportDefinition],
+      record : RecordDefinition,
+      records : List[RecordDefinition],
+      _ : NToken
+      ) : NamespaceDefinition {
+        records.Insert(0, record);
+        NamespaceDefinition(spaceName, imports, records)
+    }
+  }
+}

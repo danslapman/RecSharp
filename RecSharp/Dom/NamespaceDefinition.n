@@ -1,0 +1,19 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace RecSharp.Dom
+{
+  [Record]
+  class NamespaceDefinition
+  {
+    public Name : string;
+    public Imports : List[ImportDefinition];
+    public Types : List[RecordDefinition];
+  }
+}

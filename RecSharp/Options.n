@@ -1,0 +1,33 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace RecSharp
+{
+  /// <summary>
+  /// Commandline application options
+  /// </summary>
+  class Options
+  {
+    [CommandLine.OptionList('i', "in", Required = true, HelpText = "Source files")]
+    public InputFiles : IList[string] { get; set; }
+    [CommandLine.OptionList('r', "refs", HelpText = "Assemblies to reference")]
+    public AssemblyReferences : IList[string] { get; set; }
+    [CommandLine.Option('o', "out", Required = true, HelpText = "Output file name")]
+    public OutputAssembly : string { get; set; }
+    
+    [CommandLine.ParserState]
+    public LastParserState : CommandLine.IParserState { get; set; }
+    
+    [CommandLine.HelpOption]
+    public GetUsage() : string {
+      CommandLine.Text.HelpText.AutoBuild(this, Action(
+      (current : CommandLine.Text.HelpText) => {CommandLine.Text.HelpText.DefaultParsingErrorsHandler(this, current)}));
+    }
+  }
+}

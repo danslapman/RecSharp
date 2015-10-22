@@ -1,0 +1,8 @@
+﻿namespace Records {
+    using System;
+
+    record Test {
+        Int32 Id;
+        String Name;
+    }
+}

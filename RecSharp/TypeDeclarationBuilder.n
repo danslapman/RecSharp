@@ -85,11 +85,119 @@ namespace RecSharp
       methodDef
     }
     
+    private BuildEqualsMethod() : CodeMemberMethod {
+      def methodDef = CodeMemberMethod() <- {
+        Name = "Equals";
+        ReturnType = CodeTypeReference(typeof(bool));
+        Attributes = MemberAttributes.Public | MemberAttributes.Override;
+      };
+      
+      def argName = "other";
+      def param = CodeParameterDeclarationExpression(CodeTypeReference(typeof(object)), argName);
+      _ = methodDef.Parameters.Add(param);
+        
+      def bodyString = $"return this.Equals(other as $(name));";
+      _ = methodDef.Statements.Add(CodeSnippetStatement(bodyString));  
+        
+       methodDef
+    }
+    
+    private BuildSpecializedEqualsMethod() : CodeMemberMethod {
+      def methodDef = CodeMemberMethod() <- {
+        Name = "Equals";
+        ReturnType = CodeTypeReference(typeof(bool));
+        Attributes = MemberAttributes.Public | MemberAttributes.Final;
+      };
+      
+      def argName = "other";
+      def param = CodeParameterDeclarationExpression(CodeTypeReference(name), argName);
+        _ = methodDef.Parameters.Add(param);
+        
+      _ = methodDef.Statements.Add(CodeConditionStatement(
+        CodeBinaryOperatorExpression(
+          CodeArgumentReferenceExpression(argName),
+          CodeBinaryOperatorType.IdentityEquality,
+          CodePrimitiveExpression(null)
+        ),
+        array[CodeMethodReturnStatement(CodePrimitiveExpression(false))]
+      ));
+      
+      foreach(propDef in propertyDefinitions) {
+       _ = methodDef.Statements.Add(CodeConditionStatement(
+          CodeBinaryOperatorExpression(
+            CodePropertyReferenceExpression(CodeThisReferenceExpression(), propDef.PropertyName),
+            CodeBinaryOperatorType.IdentityInequality,
+            CodePropertyReferenceExpression(CodeArgumentReferenceExpression(argName), propDef.PropertyName)
+          ),
+          array[CodeMethodReturnStatement(CodePrimitiveExpression(false))]
+        ));
+      }
+      
+      _ = methodDef.Statements.Add(CodeMethodReturnStatement(CodePrimitiveExpression(true)));
+      
+      methodDef
+    }
+    
+    private BuildEqualityOperator() : CodeMemberMethod {
+      def methodDef = CodeMemberMethod() <- {
+        Name = "operator ==";
+        ReturnType = CodeTypeReference(typeof(bool));
+        Attributes = MemberAttributes.Public | MemberAttributes.Static;
+      };
+      
+      _ = methodDef.Parameters.Add(CodeParameterDeclarationExpression(CodeTypeReference(this.name), "left"));
+      _ = methodDef.Parameters.Add(CodeParameterDeclarationExpression(CodeTypeReference(this.name), "right"));
+        
+      def bodyString = "return left != null && left.Equals(right);";
+      _ = methodDef.Statements.Add(CodeSnippetStatement(bodyString));  
+        
+       methodDef
+    }
+    
+    private BuildInequalityOperator() : CodeMemberMethod {
+      def methodDef = CodeMemberMethod() <- {
+        Name = "operator !=";
+        ReturnType = CodeTypeReference(typeof(bool));
+        Attributes = MemberAttributes.Public | MemberAttributes.Static;
+      };
+      
+      _ = methodDef.Parameters.Add(CodeParameterDeclarationExpression(CodeTypeReference(this.name), "left"));
+      _ = methodDef.Parameters.Add(CodeParameterDeclarationExpression(CodeTypeReference(this.name), "right"));
+        
+      def bodyString = "return left == null || !left.Equals(right);";
+      _ = methodDef.Statements.Add(CodeSnippetStatement(bodyString));  
+        
+       methodDef
+    }
+    
+    private BuildGetHashCode() : CodeMemberMethod {
+      def methodDef = CodeMemberMethod() <- {
+        Name = "GetHashCode";
+        ReturnType = CodeTypeReference(typeof(int));
+        Attributes = MemberAttributes.Public | MemberAttributes.Override;
+      };
+      
+      def body = List() <- ["var hash = 17;"];
+      
+      foreach(propDef in propertyDefinitions) {
+        body.Add($"if ($(propDef.PropertyName) != null) hash = hash * 23 + $(propDef.PropertyName).GetHashCode();");
+      }
+      
+      body.Add("return hash;");
+      
+      def bodyString = string.Join("\n", body);
+      _ = methodDef.Statements.Add(CodeSnippetStatement(bodyString));  
+        
+       methodDef
+    }
+    
     public Build() : CodeTypeDeclaration {
       def declaration = CodeTypeDeclaration(this.name) <- {
         IsClass = true;
         TypeAttributes = TypeAttributes.Public | TypeAttributes.Sealed;
       }
+      
+      _ = declaration.BaseTypes.Add(CodeTypeReference($"System.IEquatable`1[$(this.name)]"));
       
       foreach(propDef in propertyDefinitions) {
         def (field, property) = BuildProperty(propDef);
@@ -118,6 +226,11 @@ namespace RecSharp
       
       _ = declaration.Members.Add(ctor);
       _ = declaration.Members.Add(BuildCopyMethod());
+      _ = declaration.Members.Add(BuildEqualsMethod());
+      _ = declaration.Members.Add(BuildSpecializedEqualsMethod());
+      _ = declaration.Members.Add(BuildEqualityOperator());
+      _ = declaration.Members.Add(BuildInequalityOperator());
+      _ = declaration.Members.Add(BuildGetHashCode());
       
       declaration
     }

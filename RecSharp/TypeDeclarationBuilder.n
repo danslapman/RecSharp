@@ -40,9 +40,7 @@ namespace RecSharp
         Type = typeRef;
         Attributes = MemberAttributes.Public | MemberAttributes.Final;
       };
-      _ = property.GetStatements.Add(CodeMethodReturnStatement(
-        CodeArgumentReferenceExpression(fieldName)
-      ));
+      _ = property.GetStatements.Add(CodeSnippetStatement($"return this.$(fieldName);"));
       
       (field, property)
     }
@@ -64,19 +62,7 @@ namespace RecSharp
         _ = param.CustomAttributes.Add(CodeAttributeDeclaration(CodeTypeReference(typeof(OptionalAttribute))));
         _ = methodDef.Parameters.Add(param);
         
-        def varName = "arg" + fieldName;
-        _ = methodDef.Statements.Add(CodeVariableDeclarationStatement(typeRef, varName));
-        _ = methodDef.Statements.Add(CodeConditionStatement(
-          CodeBinaryOperatorExpression(
-            CodeArgumentReferenceExpression(argName),
-            CodeBinaryOperatorType.IdentityEquality,
-            CodeDefaultValueExpression(typeRef)
-          ),
-          array[CodeAssignStatement(CodeVariableReferenceExpression(varName), CodeFieldReferenceExpression(CodeThisReferenceExpression(), fieldName))],
-          array[CodeAssignStatement(CodeVariableReferenceExpression(varName), CodeArgumentReferenceExpression(argName))]
-        ));
-        
-        ctorParams[idx] = CodeVariableReferenceExpression(varName);
+        ctorParams[idx] = CodeSnippetExpression($"$(argName) != default($(propDef.TypeName)) ? $(argName) : this.$(fieldName)");
       }
     
       def constructorCall = CodeObjectCreateExpression(name, ctorParams);
@@ -113,24 +99,10 @@ namespace RecSharp
       def param = CodeParameterDeclarationExpression(CodeTypeReference(name), argName);
         _ = methodDef.Parameters.Add(param);
         
-      _ = methodDef.Statements.Add(CodeConditionStatement(
-        CodeBinaryOperatorExpression(
-          CodeArgumentReferenceExpression(argName),
-          CodeBinaryOperatorType.IdentityEquality,
-          CodePrimitiveExpression(null)
-        ),
-        array[CodeMethodReturnStatement(CodePrimitiveExpression(false))]
-      ));
+      _ = methodDef.Statements.Add(CodeSnippetStatement("if (other == null) return false;"));
       
       foreach(propDef in propertyDefinitions) {
-       _ = methodDef.Statements.Add(CodeConditionStatement(
-          CodeBinaryOperatorExpression(
-            CodePropertyReferenceExpression(CodeThisReferenceExpression(), propDef.PropertyName),
-            CodeBinaryOperatorType.IdentityInequality,
-            CodePropertyReferenceExpression(CodeArgumentReferenceExpression(argName), propDef.PropertyName)
-          ),
-          array[CodeMethodReturnStatement(CodePrimitiveExpression(false))]
-        ));
+       _ = methodDef.Statements.Add(CodeSnippetStatement($"if (!$(propDef.PropertyName).Equals(other.$(propDef.PropertyName))) return false;"));
       }
       
       _ = methodDef.Statements.Add(CodeMethodReturnStatement(CodePrimitiveExpression(true)));

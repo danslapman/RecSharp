@@ -4,6 +4,7 @@ using Nemerle.Collections;
 using Nemerle.Extensions;
 using Nemerle.Imperative;
 using Nemerle.Text;
+using Nemerle.Peg;
 using Nemerle.Utility;
 
 using System;
@@ -43,7 +44,6 @@ module Program
     }
     
     foreach(file in options.InputFiles) {
-    
       def text = File.ReadAllText(file);
       def (pos, ndef) = parser.TryParse(text);
     
@@ -58,7 +58,7 @@ module Program
     
     def codeStringBuilder = StringBuilder();
     def codeWriter = StringWriter(codeStringBuilder);
-    
+        
     codeProv.GenerateCodeFromCompileUnit(compileUnit, codeWriter, null);
     
     def compilerParams = CompilerParameters();

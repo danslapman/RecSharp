@@ -19,14 +19,16 @@ namespace RecSharp.Parsing
     nmspace,
     grammar {
       ANY = !['\u0000'..'\u001F'] !'\u007F' ['\u0000'..'\uFFFF'];
-      ws : void = ("\r\n" / "\n" / "\r" / ' ')*;
+      ws : void = ("\r\n" / "\n" / "\r" / "\t" / ' ')*;
       letter = [Lu, Ll, Lt, Lm, Lo];
       digit = ['0'..'9'];
       keyword = "using" / "record" / "namespace";
       identifier : string = letter (letter / digit)*;
       path : string = identifier ("." identifier)*;
+      genericTypeDefinition : string = identifier ws"<"ws (genericTypeDefinition / identifier)(ws","ws (genericTypeDefinition / identifier))* ws">";
       
-      property : PropertyDefinition = !keyword identifier ws identifier";";
+      property : PropertyDefinition = !keyword (genericTypeDefinition / identifier) ws identifier ws";";
+      properties : List[PropertyDefinition] = (ws property ws)+;
       import : ImportDefinition = "using" ws path";";
       
       record : RecordDefinition = "record" ws identifier ws "{" ws property (ws property)* ws "}";
@@ -44,6 +46,18 @@ namespace RecSharp.Parsing
       crumbs.Add(id);
       foreach((_, i) in ids) crumbs.Add(i);
       string.Join(".", crumbs)
+    }
+    
+    genericTypeDefinition(
+      type : string,
+      _ : NToken,
+      typeArgument : string,
+      typeArguments : List[NToken*string],
+      _ : NToken
+    ) : string {
+      def typeArguments = typeArgument::typeArguments.Map((_, arg) => arg);
+      def typeArgumentsString = string.Join(",", typeArguments);
+      $"$(type)<$(typeArgumentsString)>";
     }
     
     property(typeName : string, propName : string, _ : NToken) : PropertyDefinition {

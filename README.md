@@ -10,6 +10,7 @@ namespace Records {
     record Test {
         Int32 Id;
         String Name;
+		Nullable<Decimal> Amount;
     }
 }
 ```

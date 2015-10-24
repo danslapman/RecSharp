@@ -14,10 +14,10 @@ namespace RecSharp
   /// </summary>
   class Options
   {
-    [CommandLine.OptionList('i', "in", Required = true, HelpText = "Source files")]
-    public InputFiles : IList[string] { get; set; }
-    [CommandLine.OptionList('r', "refs", HelpText = "Assemblies to reference")]
-    public AssemblyReferences : IList[string] { get; set; }
+    [CommandLine.OptionArray('i', "in", Required = true, HelpText = "Source files")]
+    public InputFiles : array[string] { get; set; }
+    [CommandLine.OptionArray('r', "refs", HelpText = "Assemblies to reference")]
+    public AssemblyReferences : array[string] { get; set; }
     [CommandLine.Option('o', "out", Required = true, HelpText = "Output file name")]
     public OutputAssembly : string { get; set; }
     

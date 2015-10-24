@@ -47,8 +47,13 @@ module Program
       def text = File.ReadAllText(file);
       def (pos, ndef) = parser.TryParse(text);
     
-      when(pos != text.Length) {
-        WriteLine($"Parsing error in position $(pos)");
+      when(pos < 0) {
+        def (errorPos, ids) = parser.GetMaxRollbackPosAndIds();
+        def location = parser.ParsingSource.GetSourceLine(errorPos);
+        def (l, _) = location.StartLineColumn;
+        def s = location.StartPos;
+        def errorMsg = $"Error in input: Line: $(l) Column: $(errorPos - s) Expected: "+ $<#..$(ids; " or "; id => parser.GetRuleName(id))#>;
+        WriteLine(errorMsg);
         return ();
       }
       

@@ -24,5 +24,5 @@ Generater class Test will have:
 * overrides os Equals() and GetHashCode()
 * == and != operators
 
-Compile it with RecSharp -i sample.rcs -o Records.dll and reference Records.dll to Your project.
+Compile it with RecSharpC -i sample.rcs -o Records.dll and reference Records.dll to Your project.
 That's it!

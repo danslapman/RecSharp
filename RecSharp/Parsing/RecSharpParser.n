@@ -35,7 +35,7 @@ namespace RecSharp.Parsing
       nmspace : NamespaceDefinition = "namespace" ws path ws "{" (ws import)* ws record (ws record)* ws "}" ws !ANY;
     }
   )]
-  class RecSharpParser
+  public class RecSharpParser
   {
     identifier(data : NToken, data2 : NToken) : string {
       GetText(data) + GetText(data2)

@@ -10,10 +10,8 @@ using System.Linq;
 namespace RecSharp.Dom
 {
   [Record]
-  class NamespaceDefinition
+  public class ImportDefinition
   {
-    public Name : string;
-    public Imports : List[ImportDefinition];
-    public Types : List[RecordDefinition];
+    public Namespace : string;
   }
 }

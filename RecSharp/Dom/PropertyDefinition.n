@@ -10,9 +10,9 @@ using System.Linq;
 namespace RecSharp.Dom
 {
   [Record]
-  class RecordDefinition
+  public class PropertyDefinition
   {
     public TypeName : string;
-    public Properties : List[PropertyDefinition];
+    public PropertyName : string;
   }
 }

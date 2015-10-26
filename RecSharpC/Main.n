@@ -4,7 +4,6 @@ using Nemerle.Collections;
 using Nemerle.Extensions;
 using Nemerle.Imperative;
 using Nemerle.Text;
-using Nemerle.Peg;
 using Nemerle.Utility;
 
 using System;

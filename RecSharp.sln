@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "RecSharpC", "RecSharpC\RecSharpC.nproj", "{D167216B-71EC-4F10-BF86-F1905AF316C1}"
 EndProject
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "RecSharp", "RecSharp\RecSharp.nproj", "{F1EC6FEA-4614-4EF6-8458-1C9AD650A50E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{D167216B-71EC-4F10-BF86-F1905AF316C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D167216B-71EC-4F10-BF86-F1905AF316C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D167216B-71EC-4F10-BF86-F1905AF316C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1EC6FEA-4614-4EF6-8458-1C9AD650A50E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1EC6FEA-4614-4EF6-8458-1C9AD650A50E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1EC6FEA-4614-4EF6-8458-1C9AD650A50E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1EC6FEA-4614-4EF6-8458-1C9AD650A50E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

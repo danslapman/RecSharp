@@ -12,10 +12,7 @@ using RecSharp.Dom;
 
 namespace RecSharp
 {
-  /// <summary>
-  /// Description of NamespaceDeclarationBuilder.
-  /// </summary>
-  class NamespaceDeclarationBuilder
+  public class NamespaceDeclarationBuilder
   {
     private name : string;
     private imports : List[ImportDefinition];

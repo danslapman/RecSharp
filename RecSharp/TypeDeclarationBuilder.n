@@ -19,7 +19,7 @@ namespace RecSharp
   /// <summary>
   /// Builder for CodeTypeDeclaration
   /// </summary>
-  class TypeDeclarationBuilder
+  public class TypeDeclarationBuilder
   {
     private name : string;
     private propertyDefinitions : List[PropertyDefinition];

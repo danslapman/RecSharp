@@ -24,15 +24,15 @@ namespace RecSharp.Parsing
       digit = ['0'..'9'];
       keyword = "using" / "record" / "namespace";
       identifier : string = letter (letter / digit)*;
-      path : string = identifier ("." identifier)*;
+      qualifiedName : string = identifier ("." identifier)*;
       genericTypeDefinition : string = identifier ws"<"ws (genericTypeDefinition / identifier)(ws","ws (genericTypeDefinition / identifier))* ws">";
       
       property : PropertyDefinition = !keyword (genericTypeDefinition / identifier) ws identifier ws";";
       properties : List[PropertyDefinition] = (ws property ws)+;
-      import : ImportDefinition = "using" ws path";";
+      import : ImportDefinition = "using" ws qualifiedName";";
       
       record : RecordDefinition = "record" ws identifier ws "{" ws property (ws property)* ws "}";
-      nmspace : NamespaceDefinition = "namespace" ws path ws "{" (ws import)* ws record (ws record)* ws "}" ws !ANY;
+      nmspace : NamespaceDefinition = "namespace" ws qualifiedName ws "{" (ws import)* ws record (ws record)* ws "}" ws !ANY;
     }
   )]
   public class RecSharpParser
@@ -41,7 +41,7 @@ namespace RecSharp.Parsing
       GetText(data) + GetText(data2)
     }
     
-    path(id : string, ids : List[NToken * string]) : string {
+    qualifiedName(id : string, ids : List[NToken * string]) : string {
       def crumbs = List();
       crumbs.Add(id);
       foreach((_, i) in ids) crumbs.Add(i);

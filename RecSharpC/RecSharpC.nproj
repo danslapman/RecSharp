@@ -8,8 +8,8 @@
     <ProjectGuid>d167216b-71ec-4f10-bf86-f1905af316c1</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RecSharp</RootNamespace>
-    <AssemblyName>RecSharp</AssemblyName>
+    <RootNamespace>RecSharpC</RootNamespace>
+    <AssemblyName>RecSharpC</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NoStdLib>true</NoStdLib>

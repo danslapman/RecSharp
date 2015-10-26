@@ -70,6 +70,9 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dom\AssemblyLoadDefinition.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Dom\ImportDefinition.n">
       <SubType>Code</SubType>
     </Compile>

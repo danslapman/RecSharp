@@ -16,7 +16,7 @@ namespace RecSharp.Parsing
   /// RecSharp sources parser
   /// </summary>
   [PegGrammar(Options = EmitDebugSources,
-    nmspace,
+    source,
     grammar {
       ANY = !['\u0000'..'\u001F'] !'\u007F' ['\u0000'..'\uFFFF'];
       ws : void = ("\r\n" / "\n" / "\r" / "\t" / ' ')*;
@@ -25,14 +25,18 @@ namespace RecSharp.Parsing
       keyword = "using" / "record" / "namespace";
       identifier : string = letter (letter / digit)*;
       qualifiedName : string = identifier ("." identifier)*;
+      path : string = qualifiedName ("/" qualifiedName)*;
       genericTypeDefinition : string = identifier ws"<"ws (genericTypeDefinition / identifier)(ws","ws (genericTypeDefinition / identifier))* ws">";
+      loadAssemblyDirective : AssemblyLoadDefinition = ws"#ref"ws qualifiedName";";
       
       property : PropertyDefinition = !keyword (genericTypeDefinition / identifier) ws identifier ws";";
       properties : List[PropertyDefinition] = (ws property ws)+;
       import : ImportDefinition = "using" ws qualifiedName";";
       
       record : RecordDefinition = "record" ws identifier ws "{" ws property (ws property)* ws "}";
-      nmspace : NamespaceDefinition = "namespace" ws qualifiedName ws "{" (ws import)* ws record (ws record)* ws "}" ws !ANY;
+      nmspace : NamespaceDefinition = "namespace" ws qualifiedName ws "{" (ws import)* ws record (ws record)* ws "}" ws;
+      
+      source : SourceFileContent = loadAssemblyDirective* ws nmspace+;
     }
   )]
   public class RecSharpParser
@@ -42,6 +46,13 @@ namespace RecSharp.Parsing
     }
     
     qualifiedName(id : string, ids : List[NToken * string]) : string {
+      def crumbs = List();
+      crumbs.Add(id);
+      foreach((_, i) in ids) crumbs.Add(i);
+      string.Join(".", crumbs)
+    }
+    
+    path(id : string, ids : List[NToken * string]) : string {
       def crumbs = List();
       crumbs.Add(id);
       foreach((_, i) in ids) crumbs.Add(i);
@@ -58,6 +69,10 @@ namespace RecSharp.Parsing
       def typeArguments = typeArgument::typeArguments.Map((_, arg) => arg);
       def typeArgumentsString = string.Join(",", typeArguments);
       $"$(type)<$(typeArgumentsString)>";
+    }
+    
+    loadAssemblyDirective(_ : NToken, assembly : string, _ : NToken) : AssemblyLoadDefinition {
+      AssemblyLoadDefinition(assembly)
     }
     
     property(typeName : string, propName : string, _ : NToken) : PropertyDefinition {
@@ -91,6 +106,10 @@ namespace RecSharp.Parsing
       ) : NamespaceDefinition {
         records.Insert(0, record);
         NamespaceDefinition(spaceName, imports, records)
+    }
+    
+    source(references : List[AssemblyLoadDefinition], namespaces : List[NamespaceDefinition]) : SourceFileContent {
+      SourceFileContent(references, namespaces)
     }
   }
 }

@@ -45,7 +45,7 @@ module Program
     
     foreach(file in options.InputFiles) {
       def text = File.ReadAllText(file);
-      def (pos, ndef) = parser.TryParse(text);
+      def (pos, source) = parser.TryParse(text);
     
       when(pos < 0) {
         def (errorPos, ids) = parser.GetMaxRollbackPosAndIds();
@@ -57,8 +57,14 @@ module Program
         return ();
       }
       
-      def builder = NamespaceDeclarationBuilder(ndef);
-      _ = compileUnit.Namespaces.Add(builder.Build());
+      foreach(reference in source.References) {
+         _ = compileUnit.ReferencedAssemblies.Add(reference.Path);
+      }
+      
+      foreach(nmspace in source.Namespaces) {
+        def builder = NamespaceDeclarationBuilder(nmspace);
+        _ = compileUnit.Namespaces.Add(builder.Build());
+      }
     }
     
     def codeStringBuilder = StringBuilder();

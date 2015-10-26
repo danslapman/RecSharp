@@ -85,6 +85,9 @@
     <Compile Include="Dom\RecordDefinition.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Dom\SourceFileContent.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="NamespaceDeclarationBuilder.n">
       <SubType>Code</SubType>
     </Compile>

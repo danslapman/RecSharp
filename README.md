@@ -24,5 +24,10 @@ Generater class Test will have:
 * overrides os Equals() and GetHashCode()
 * == and != operators
 
+External libraries can be referenced by command-line parameter or by the following syntax (which if useful for VS extension):
+```
+#load System.Linq.dll;
+```
+
 Compile it with RecSharpC -i sample.rcs -o Records.dll and reference Records.dll to Your project.
 That's it!

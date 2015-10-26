@@ -3,12 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "RecSharp", "RecSharp\RecSharp.nproj", "{D167216B-71EC-4F10-BF86-F1905AF316C1}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{231B3F31-8DE8-48FA-A614-CE9B41C02E90}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "RecSharpC", "RecSharpC\RecSharpC.nproj", "{D167216B-71EC-4F10-BF86-F1905AF316C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
